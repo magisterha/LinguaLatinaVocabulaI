@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古拉丁語詞彙練習</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estética Clásica Romana --- */
+        :root {
+            --marble-bg: #F5F5DC; /* Beige (Mármol claro) */
+            --parchment-bg: #FFF8E7; /* Crema para las tarjetas */
+            --text-color: #1A1A1A; /* Negro para texto */
+            --imperial-red: #8B0000; /* Rojo oscuro imperial */
+            --imperial-red-dark: #660000; /* Rojo más oscuro para hover */
+            --border-color: #8B4513; /* Marrón oscuro para bordes */
+            
+            --correct-answer: #556B2F; /* Verde Oliva Oscuro */
+            --incorrect-answer: #8B0000; /* Rojo Oscuro */
+            --button-disabled-bg: #a1927d;
+        }
+
+        body {
+            font-family: 'Noto Serif TC', 'Georgia', serif;
+            background-color: var(--marble-bg);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        /* --- Encabezado y Cambio de Modo --- */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+            border-bottom: 4px double var(--text-color);
+            padding-bottom: 20px;
+        }
+        .header h1 { 
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: var(--text-color); 
+            font-size: 3em; 
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+        .header p { font-size: 1.2em; color: var(--text-color); margin-top: 0; }
+        #mode-switcher {
+            background-color: var(--text-color);
+            color: var(--parchment-bg);
+            border: 2px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1em;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        #mode-switcher:hover { background-color: var(--imperial-red); color: var(--parchment-bg); }
+
+        /* --- Vista de Tarjetas --- */
+        #flashcard-view { width: 100%; max-width: 1200px; }
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .card { background-color: transparent; height: 200px; perspective: 1000px; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.7s; transform-style: preserve-3d; }
+        .card.is-flipped .card-inner { transform: rotateY(180deg); }
+        .card-face { 
+            position: absolute; width: 100%; height: 100%; 
+            -webkit-backface-visibility: hidden; backface-visibility: hidden; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            border-radius: 8px; 
+            border: 3px solid var(--border-color);
+            padding: 20px; box-sizing: border-box; text-align: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .card-front { background-color: var(--parchment-bg); }
+        .card-back { background-color: var(--parchment-bg); transform: rotateY(180deg); }
+        .latin-word { font-size: 2.2em; font-family: "Times New Roman", Times, serif; margin-bottom: 10px; color: var(--text-color); }
+        .latin-info { font-size: 1.4em; color: #555; font-family: "Times New Roman", Times, serif; }
+        .chinese-translation { font-size: 2.5em; font-weight: bold; color: var(--imperial-red); }
+        .category { font-size: 1.2em; color: var(--text-color); margin-top: 15px; background-color: rgba(210, 180, 140, 0.5); padding: 5px 15px; border-radius: 20px; }
+        
+        /* --- Controles de Navegación --- */
+        .navigation-controls { display: flex; align-items: center; justify-content: center; gap: 20px; }
+        .nav-button { 
+            background-color: var(--imperial-red); 
+            color: var(--parchment-bg); 
+            border: 2px solid var(--text-color); 
+            border-radius: 8px; padding: 12px 25px; font-size: 1em; 
+            font-family: 'Noto Serif TC', serif; font-weight: bold;
+            cursor: pointer; transition: all 0.3s; 
+        }
+        .nav-button:hover:not(:disabled) { background-color: var(--imperial-red-dark); }
+        .nav-button:disabled { background-color: var(--button-disabled-bg); cursor: not-allowed; border-color: #777; }
+        #page-indicator { font-size: 1.2em; font-weight: bold; color: var(--text-color); }
+
+        /* --- Vista de Ejercicios --- */
+        #exercise-view { display: none; width: 100%; max-width: 800px; }
+        .exercise-item {
+            background-color: var(--parchment-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .exercise-item label { font-size: 1.2em; flex-grow: 1; }
+        .exercise-item input {
+            font-size: 1.2em;
+            padding: 8px 12px;
+            border: 2px solid var(--marble-bg);
+            border-radius: 8px;
+            font-family: "Times New Roman", Times, serif;
+            transition: border-color 0.3s;
+            flex-basis: 200px;
+            flex-grow: 2;
+            background-color: #fff;
+        }
+        .exercise-item input:focus { outline: none; border-color: var(--imperial-red); }
+        .feedback { font-size: 1em; font-weight: bold; flex-basis: 100%; display: none; }
+        .feedback.correct { color: var(--correct-answer); }
+        .feedback.incorrect { color: var(--incorrect-answer); }
+        .exercise-controls { text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>古拉丁語詞彙練習</h1>
+        <p id="instruction-text">點擊卡片以查看翻譯</p>
+        <button id="mode-switcher">切換到練習模式</button>
+    </div>
+
+    <!-- Vista de Tarjetas (Modo por defecto) -->
+    <div id="flashcard-view">
+        <div class="card-container" id="card-container"></div>
+        <div class="navigation-controls">
+            <button id="prev-btn" class="nav-button">上一頁</button>
+            <span id="page-indicator"></span>
+            <button id="next-btn" class="nav-button">下一頁</button>
+        </div>
+    </div>
+
+    <!-- Vista de Ejercicios (Oculta por defecto) -->
+    <div id="exercise-view">
+        <div id="exercise-container"></div>
+        <div class="exercise-controls">
+            <button id="check-answers-btn" class="nav-button">檢查答案</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Base de Datos de Vocabulario ---
+        const vocabulary = [
+            // Página 1: Sustantivos
+            [
+                { latin: 'imperium', info: '', chinese: '帝國', category: '名詞', answers: ['imperium'] },
+                { latin: 'fluvius', info: '', chinese: '河流', category: '名詞', answers: ['fluvius'] },
+                { latin: 'īnsula', info: '', chinese: '島嶼', category: '名詞', answers: ['insula'] },
+                { latin: 'oppidum', info: '', chinese: '城鎮', category: '名詞', answers: ['oppidum'] },
+                { latin: 'prōvincia', info: '', chinese: '行省', category: '名詞', answers: ['provincia'] },
+                { latin: 'Rōma', info: '', chinese: '羅馬', category: '專有名詞', answers: ['Roma'] },
+                { latin: 'Eurōpa', info: '', chinese: '歐洲', category: '專有名詞', answers: ['Europa'] },
+                { latin: 'Āsia', info: '', chinese: '亞洲', category: '專有名詞', answers: ['Asia'] },
+                { latin: 'Āfrica', info: '', chinese: '非洲', category: '專有名詞', answers: ['Africa'] }
+            ],
+            // Página 2: Adjetivos y Verbos
+            [
+                { latin: 'magnus', info: '-a, -um', chinese: '大的', category: '形容詞', answers: ['magnus'] },
+                { latin: 'parvus', info: '-a, -um', chinese: '小的', category: '形容詞', answers: ['parvus'] },
+                { latin: 'Rōmānus', info: '-a, -um', chinese: '羅馬的', category: '形容詞', answers: ['Romanus'] },
+                { latin: 'Graecus', info: '-a, -um', chinese: '希臘的', category: '形容詞', answers: ['Graecus'] },
+                { latin: 'multī', info: '-ae, -a', chinese: '許多的', category: '形容詞', answers: ['multi'] },
+                { latin: 'paucī', info: '-ae, -a', chinese: '少數的', category: '形容詞', answers: ['pauci'] },
+                { latin: 'est', info: '', chinese: '是 (單數)', category: '動詞', answers: ['est'] },
+                { latin: 'sunt', info: '', chinese: '是 (複數)', category: '動詞', answers: ['sunt'] }
+            ],
+            // Página 3: Adverbios y otros
+            [
+                { latin: 'in', info: '(+ abl.)', chinese: '在', category: '介詞', answers: ['in'] },
+                { latin: 'et', info: '', chinese: '和', category: '連詞', answers: ['et'] },
+                { latin: 'quoque', info: '', chinese: '也', category: '副詞', answers: ['quoque'] },
+                { latin: 'nōn', info: '', chinese: '不', category: '副詞', answers: ['non'] },
+                { latin: 'sed', info: '', chinese: '但是', category: '連詞', answers: ['sed'] },
+                { latin: 'ubi', info: '', chinese: '在哪裡', category: '疑問詞', answers: ['ubi'] },
+                { latin: 'Quid', info: '', chinese: '什麼', category: '疑問詞', answers: ['Quid', 'quid'] },
+                { latin: '-ne', info: '(sufijo)', chinese: '嗎 (是非問句)', category: '疑問詞', answers: ['-ne'] }
+            ]
+        ];
+
+        // --- Lógica de la Aplicación ---
+        const flashcardView = document.getElementById('flashcard-view');
+        const exerciseView = document.getElementById('exercise-view');
+        const modeSwitcher = document.getElementById('mode-switcher');
+        const instructionText = document.getElementById('instruction-text');
+        
+        let isExerciseMode = false;
+
+        // --- Lógica para Tarjetas (Flashcards) ---
+        const cardContainer = document.getElementById('card-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const pageIndicator = document.getElementById('page-indicator');
+        let currentPage = 0;
+
+        function renderFlashcardPage(pageIndex) {
+            cardContainer.innerHTML = '';
+            const pageVocabulary = vocabulary[pageIndex];
+            pageVocabulary.forEach(word => {
+                const cardHTML = `
+                    <div class="card">
+                        <div class="card-inner">
+                            <div class="card-face card-front">
+                                <div class="latin-word">${word.latin}</div>
+                                <div class="latin-info">${word.info}</div>
+                            </div>
+                            <div class="card-face card-back">
+                                <div class="chinese-translation">${word.chinese}</div>
+                                <div class="category">${word.category}</div>
+                            </div>
+                        </div>
+                    </div>`;
+                cardContainer.innerHTML += cardHTML;
+            });
+            const cards = cardContainer.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+            });
+            updateNavigation();
+        }
+
+        function updateNavigation() {
+            pageIndicator.textContent = `第 ${currentPage + 1} 頁 / 共 ${vocabulary.length} 頁`;
+            prevBtn.disabled = (currentPage === 0);
+            nextBtn.disabled = (currentPage === vocabulary.length - 1);
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                renderFlashcardPage(currentPage);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < vocabulary.length - 1) {
+                currentPage++;
+                renderFlashcardPage(currentPage);
+            }
+        });
+
+        // --- Lógica para Ejercicios ---
+        const exerciseContainer = document.getElementById('exercise-container');
+        const checkAnswersBtn = document.getElementById('check-answers-btn');
+        const allWords = vocabulary.flat(); // Combina todas las páginas en una sola lista
+
+        function renderExercises() {
+            exerciseContainer.innerHTML = '';
+            // Mezclar el vocabulario para que los ejercicios salgan en orden aleatorio
+            const shuffledWords = allWords.sort(() => 0.5 - Math.random());
+
+            shuffledWords.forEach((word, index) => {
+                const exerciseHTML = `
+                    <div class="exercise-item">
+                        <label for="ex-${index}">${word.chinese} (${word.category}):</label>
+                        <input type="text" id="ex-${index}" data-answers='${JSON.stringify(word.answers)}' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <span class="feedback" id="feedback-${index}"></span>
+                    </div>`;
+                exerciseContainer.innerHTML += exerciseHTML;
+            });
+        }
+
+        checkAnswersBtn.addEventListener('click', () => {
+            const inputs = exerciseContainer.querySelectorAll('input');
+            inputs.forEach((input, index) => {
+                const userValue = input.value.trim();
+                const correctAnswers = JSON.parse(input.dataset.answers);
+                const feedbackEl = document.getElementById(`feedback-${index}`);
+
+                // Normalizar la respuesta del usuario (quitar macrones para la comprobación)
+                const normalizedUserValue = userValue.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                if (correctAnswers.includes(userValue) || correctAnswers.includes(normalizedUserValue)) {
+                    input.style.borderColor = 'var(--correct-answer)';
+                    feedbackEl.textContent = '正確';
+                    feedbackEl.className = 'feedback correct';
+                } else {
+                    input.style.borderColor = 'var(--incorrect-answer)';
+                    feedbackEl.textContent = `錯誤. 答案是: ${correctAnswers[0]}`;
+                    feedbackEl.className = 'feedback incorrect';
+                }
+                feedbackEl.style.display = 'block';
+            });
+        });
+
+        // --- Lógica para Cambiar de Modo ---
+        modeSwitcher.addEventListener('click', () => {
+            isExerciseMode = !isExerciseMode;
+            if (isExerciseMode) {
+                flashcardView.style.display = 'none';
+                exerciseView.style.display = 'block';
+                modeSwitcher.textContent = '切換到卡片模式';
+                instructionText.textContent = '填寫拉丁詞彙並檢查答案';
+                renderExercises();
+            } else {
+                flashcardView.style.display = 'block';
+                exerciseView.style.display = 'none';
+                modeSwitcher.textContent = '切換到練習模式';
+                instructionText.textContent = '點擊卡片以查看翻譯';
+            }
+        });
+
+        // --- Carga Inicial ---
+        renderFlashcardPage(currentPage);
+
+    </script>
+
+</body>
+</html>
